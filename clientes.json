@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "nombre": "Maria",
+    "apellido": "Perez",
+    "email": "mariperez@gmail.com",
+    "telefono": "3468988776",
+    "activo": true
+  },
+  {
+    "id": 2,
+    "nombre": "Joaquin",
+    "apellido": "Lopez",
+    "email": "joacolopez@hotmail.com",
+    "telefono": "3468122334",
+    "activo": true
+  },
+  {
+    "id": 3,
+    "nombre": "Sofia",
+    "apellido": "Martinez",
+    "email": "sofiamartinez@gmail.com",
+    "telefono": "3468455667",
+    "activo": true
+  },
+  {
+    "id": 4,
+    "nombre": "Nicolas",
+    "apellido": "Paz",
+    "email": "nicopaz19@gmail.com",
+    "telefono": "3468742895",
+    "activo": false
+  },
+  {
+    "id": 5,
+    "nombre": "Camila",
+    "apellido": "Zarate",
+    "email": "cami2003@gmail.com",
+    "telefono": "3468773322",
+    "activo": true
+  }
+]
