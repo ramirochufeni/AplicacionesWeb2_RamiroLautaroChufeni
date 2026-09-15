@@ -5,7 +5,7 @@
     "apellido": "Perez",
     "email": "mariperez@gmail.com",
     "telefono": "3468988776",
-    "activo": true
+    "activo": false
   },
   {
     "id": 2,
@@ -24,19 +24,19 @@
     "activo": true
   },
   {
-    "id": 4,
-    "nombre": "Nicolas",
-    "apellido": "Paz",
-    "email": "nicopaz19@gmail.com",
-    "telefono": "3468742895",
-    "activo": false
-  },
-  {
     "id": 5,
     "nombre": "Camila",
     "apellido": "Zarate",
     "email": "cami2003@gmail.com",
     "telefono": "3468773322",
+    "activo": true
+  },
+  {
+    "id": 6,
+    "nombre": "Gabriel",
+    "apellido": "Chufeni",
+    "email": "gabrielchufeni@gmail.com",
+    "telefono": "3468345323",
     "activo": true
   }
 ]
