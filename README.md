@@ -68,19 +68,19 @@ También se agregó un archivo .gitignore para evitar la subida de las carpetas 
 
 Vista principal de RamaTech, donde se presenta el servicio técnico de computación:
 
-![Hero RamaTech](./imagenes/hero-ramatech.jpg)
+![Hero RamaTech](./imagenes/hero-ramatech.jpeg)
 
 Vista de los servicios técnicos disponibles:
 
-![Servicios RamaTech](./imagenes/servicios-ramatech.jpg)
+![Servicios RamaTech](./imagenes/servicios-ramatech.jpeg)
 
 Vista del carrito de compras con los productos seleccionados:
 
-![Carrito RamaTech](./imagenes/carrito-ramatech.jpg)
+![Carrito RamaTech](./imagenes/carrito-ramatech.jpeg)
 
 Ejemplo de una orden generada desde el carrito y almacenada en ordenes.json:
 
-![Orden generada](./imagenes/orden-generada.jpg)
+![Orden generada](./imagenes/orden-generada.jpeg)
 
 Ejemplo de eliminación de un cliente mediante la ruta DELETE:
 
