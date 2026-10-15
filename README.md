@@ -1,4 +1,4 @@
-# Aplicaciones Web 2 - Tercera etapa de trabajo practico
+# Aplicaciones Web 2 - Tercera etapa del trabajo practico
 
 El proyecto representa un sistema de gestión para un servicio técnico de computación. La idea es organizar la información de los clientes, los servicios que ofrece el negocio, los turnos solicitados y también permitir la venta de productos y componentes de computación.
 
