@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "nombre": "Memoria RAM Kingston 16GB",
+    "categoria": "Memorias",
+    "precio": 155000,
+    "stock": 4,
+    "imagen": "ram-kingston.jpg"
+  },
+  {
+    "id": 2,
+    "nombre": "SSD Kingston 500GB",
+    "categoria": "Almacenamiento",
+    "precio": 95000,
+    "stock": 4,
+    "imagen": "ssd-kingston.jpg"
+  },
+  {
+    "id": 3,
+    "nombre": "Mouse Logitech G203",
+    "categoria": "Perifericos",
+    "precio": 38000,
+    "stock": 0,
+    "imagen": "mouse-logitech.jpg"
+  },
+  {
+    "id": 4,
+    "nombre": "Teclado Redragon Kumara",
+    "categoria": "Perifericos",
+    "precio": 52000,
+    "stock": 4,
+    "imagen": "teclado-redragon.jpg"
+  },
+  {
+    "id": 5,
+    "nombre": "Fuente Corsair 650W",
+    "categoria": "Fuentes",
+    "precio": 115000,
+    "stock": 3,
+    "imagen": "fuente-corsair.jpg"
+  },
+  {
+    "id": 6,
+    "nombre": "SSD NVMe Kingston 1TB",
+    "categoria": "Almacenamiento",
+    "precio": 180000,
+    "stock": 6,
+    "imagen": "ssd-nvme-kingston.jpg"
+  }
+]

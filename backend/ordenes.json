@@ -1,0 +1,111 @@
+[
+  {
+    "id": 1,
+    "idCliente": 1,
+    "productos": [
+      {
+        "idProducto": 1,
+        "nombre": "Memoria RAM Kingston 16GB",
+        "precio": 155000,
+        "cantidad": 1,
+        "subtotal": 155000
+      },
+      {
+        "idProducto": 3,
+        "nombre": "Mouse Logitech G203",
+        "precio": 38000,
+        "cantidad": 2,
+        "subtotal": 76000
+      }
+    ],
+    "total": 231000,
+    "fecha": "2026-10-13T12:49:53.155Z"
+  },
+  {
+    "id": 2,
+    "idCliente": 1,
+    "productos": [
+      {
+        "idProducto": 4,
+        "nombre": "Teclado Redragon Kumara",
+        "precio": 52000,
+        "cantidad": 1,
+        "subtotal": 52000
+      },
+      {
+        "idProducto": 3,
+        "nombre": "Mouse Logitech G203",
+        "precio": 38000,
+        "cantidad": 1,
+        "subtotal": 38000
+      }
+    ],
+    "total": 90000,
+    "fecha": "2026-10-13T15:26:52.886Z"
+  },
+  {
+    "id": 3,
+    "idCliente": 6,
+    "productos": [
+      {
+        "idProducto": 3,
+        "nombre": "Mouse Logitech G203",
+        "precio": 38000,
+        "cantidad": 1,
+        "subtotal": 38000
+      }
+    ],
+    "total": 38000,
+    "fecha": "2026-10-13T15:28:46.214Z"
+  },
+  {
+    "id": 4,
+    "idCliente": 3,
+    "productos": [
+      {
+        "idProducto": 1,
+        "nombre": "Memoria RAM Kingston 16GB",
+        "precio": 155000,
+        "cantidad": 3,
+        "subtotal": 465000
+      },
+      {
+        "idProducto": 2,
+        "nombre": "SSD Kingston 500GB",
+        "precio": 95000,
+        "cantidad": 1,
+        "subtotal": 95000
+      },
+      {
+        "idProducto": 3,
+        "nombre": "Mouse Logitech G203",
+        "precio": 38000,
+        "cantidad": 6,
+        "subtotal": 228000
+      },
+      {
+        "idProducto": 6,
+        "nombre": "SSD NVMe Kingston 1TB",
+        "precio": 180000,
+        "cantidad": 1,
+        "subtotal": 180000
+      },
+      {
+        "idProducto": 5,
+        "nombre": "Fuente Corsair 650W",
+        "precio": 115000,
+        "cantidad": 1,
+        "subtotal": 115000
+      },
+      {
+        "idProducto": 4,
+        "nombre": "Teclado Redragon Kumara",
+        "precio": 52000,
+        "cantidad": 1,
+        "subtotal": 52000
+      }
+    ],
+    "total": 1135000,
+    "fecha": "2026-10-13T21:08:30.926Z"
+  }
+]

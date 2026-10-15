@@ -1,9 +1,12 @@
 import express from 'express';
 import fs from 'node:fs';
+import cors from 'cors';
 
 const PUERTO = 3000;
 
 const servidor = express();
+
+servidor.use(cors());
 
 servidor.use(express.json());
 
@@ -274,6 +277,148 @@ servidor.post('/turnos', (peticion, respuesta) => {
     respuesta.status(201).json({
         mensaje: 'Turno creado correctamente',
         turno: nuevoTurno
+    });
+});
+
+// GET - Obtener productos y filtrar por categoría
+servidor.get('/productos', (peticion, respuesta) => {
+    const datos = fs.readFileSync('./productos.json', 'utf-8');
+    const productos = JSON.parse(datos);
+
+    const categoria = peticion.query.categoria;
+
+    
+    if (!categoria) {
+        return respuesta.json(productos);
+    }
+
+    // Filtrar productos por categoría
+    const productosFiltrados = productos.filter(
+        producto =>
+            producto.categoria.toLowerCase() === categoria.toLowerCase()
+    );
+
+    respuesta.json(productosFiltrados);
+});
+
+// POST - Crear una nueva orden de compra
+servidor.post('/ordenes', (peticion, respuesta) => {
+    const datosOrdenes = fs.readFileSync('./ordenes.json', 'utf-8');
+    const ordenes = JSON.parse(datosOrdenes);
+
+    const datosClientes = fs.readFileSync('./clientes.json', 'utf-8');
+    const clientes = JSON.parse(datosClientes);
+
+    const datosProductos = fs.readFileSync('./productos.json', 'utf-8');
+    const productosDisponibles = JSON.parse(datosProductos);
+
+    const {
+        idCliente,
+        productos
+    } = peticion.body;
+
+    // Validar datos obligatorios
+    if (
+        !idCliente ||
+        !productos ||
+        productos.length === 0
+    ) {
+        return respuesta.status(400).json({
+            mensaje: 'Faltan datos obligatorios'
+        });
+    }
+
+    
+    const clienteExiste = clientes.find(
+        cliente => cliente.id === idCliente
+    );
+
+    if (!clienteExiste) {
+        return respuesta.status(404).json({
+            mensaje: 'El cliente no existe'
+        });
+    }
+
+    let total = 0;
+    const detalleProductos = [];
+
+    // Verificar productos y stock
+    for (const item of productos) {
+        const producto = productosDisponibles.find(
+            producto => producto.id === item.idProducto
+        );
+
+        if (!producto) {
+            return respuesta.status(404).json({
+                mensaje: `El producto ${item.idProducto} no existe`
+            });
+        }
+
+        if (item.cantidad <= 0) {
+            return respuesta.status(400).json({
+                mensaje: 'La cantidad debe ser mayor a cero'
+            });
+        }
+
+        if (producto.stock < item.cantidad) {
+            return respuesta.status(400).json({
+                mensaje: `No hay stock suficiente de ${producto.nombre}`
+            });
+        }
+
+        const subtotal = producto.precio * item.cantidad;
+
+        total += subtotal;
+
+        detalleProductos.push({
+            idProducto: producto.id,
+            nombre: producto.nombre,
+            precio: producto.precio,
+            cantidad: item.cantidad,
+            subtotal
+        });
+    }
+
+    // Descontar stock
+    for (const item of productos) {
+        const producto = productosDisponibles.find(
+            producto => producto.id === item.idProducto
+        );
+
+        producto.stock -= item.cantidad;
+    }
+
+    // Generar ID de orden
+    const nuevoId =
+        ordenes.length > 0
+            ? Math.max(...ordenes.map(orden => orden.id)) + 1
+            : 1;
+
+    const nuevaOrden = {
+        id: nuevoId,
+        idCliente,
+        productos: detalleProductos,
+        total,
+        fecha: new Date().toISOString()
+    };
+
+    ordenes.push(nuevaOrden);
+
+    // Guardar orden
+    fs.writeFileSync(
+        './ordenes.json',
+        JSON.stringify(ordenes, null, 2)
+    );
+
+    // Actualizar stock
+    fs.writeFileSync(
+        './productos.json',
+        JSON.stringify(productosDisponibles, null, 2)
+    );
+
+    respuesta.status(201).json({
+        mensaje: 'Orden creada correctamente',
+        orden: nuevaOrden
     });
 });
 

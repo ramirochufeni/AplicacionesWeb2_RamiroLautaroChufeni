@@ -1,0 +1,290 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="RamaTech - Servicio Técnico">
+    <Header />
+
+    <main>
+
+        <!-- Presentación -->
+        <section class="bg-slate-900 text-white">
+            <div class="max-w-6xl mx-auto px-4 py-20 text-center">
+
+                <p class="text-blue-400 font-semibold mb-3">
+                    Servicio Técnico de Computación
+                </p>
+
+                <h1 class="text-4xl md:text-5xl font-bold">
+                    Soluciones para tu computadora
+                </h1>
+
+                <p class="mt-5 text-lg text-gray-300 max-w-2xl mx-auto">
+                    Reparación, mantenimiento, diagnóstico,
+                    armado de PC y venta de componentes.
+                </p>
+
+                <div class="mt-8 flex justify-center gap-4 flex-wrap">
+                    <a
+                        href="#servicios"
+                        class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold"
+                    >
+                        Ver servicios
+                    </a>
+
+                    <a
+                        href="/productos"
+                        class="bg-white text-slate-900 hover:bg-gray-200 px-6 py-3 rounded-lg font-semibold"
+                    >
+                        Ver productos
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Servicios -->
+        <section
+            id="servicios"
+            class="max-w-6xl mx-auto px-4 py-14"
+        >
+            <div class="mb-8">
+                <p class="text-blue-600 font-semibold">
+                    Servicio técnico
+                </p>
+
+                <h2 class="text-3xl font-bold mt-1">
+                    Nuestros servicios
+                </h2>
+
+                <p class="text-gray-600 mt-2">
+                    Trabajos de mantenimiento, reparación y armado de computadoras.
+                </p>
+            </div>
+
+            <div
+                id="lista-servicios"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+                <p>Cargando servicios...</p>
+            </div>
+        </section>
+
+        <!-- Productos -->
+        <section class="bg-white">
+            <div class="max-w-6xl mx-auto px-4 py-14">
+
+                <div class="mb-8">
+                    <p class="text-blue-600 font-semibold">
+                        También contamos con
+                    </p>
+
+                    <h2 class="text-3xl font-bold mt-1">
+                        Productos y componentes
+                    </h2>
+
+                    <p class="text-gray-600 mt-2">
+                        Componentes y periféricos para reparar,
+                        actualizar o mejorar tu computadora.
+                    </p>
+                </div>
+
+                <div
+                    id="productos-destacados"
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                    <p>Cargando productos...</p>
+                </div>
+
+                <div class="text-center mt-10">
+                    <a
+                        href="/productos"
+                        class="inline-block bg-slate-900 text-white px-6 py-3 rounded-lg hover:bg-slate-800"
+                    >
+                        Ver todos los productos
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Información -->
+        <section class="bg-gray-100">
+            <div class="max-w-6xl mx-auto px-4 py-14">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+
+                    <div>
+                        <h3 class="text-xl font-bold">
+                            Servicio técnico
+                        </h3>
+
+                        <p class="text-gray-600 mt-2">
+                            Diagnóstico y mantenimiento para distintos tipos de equipos.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold">
+                            Componentes
+                        </h3>
+
+                        <p class="text-gray-600 mt-2">
+                            Productos para actualizar o mejorar tu computadora.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold">
+                            Todo en un solo lugar
+                        </h3>
+
+                        <p class="text-gray-600 mt-2">
+                            Servicio técnico y venta de productos dentro del mismo sistema.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const contenedorServicios =
+            document.querySelector('#lista-servicios');
+
+        const contenedorProductos =
+            document.querySelector('#productos-destacados');
+
+        async function cargarServicios() {
+            try {
+                const respuesta = await fetch(
+                    'http://localhost:3000/servicios'
+                );
+
+                const servicios = await respuesta.json();
+
+                if (!contenedorServicios) return;
+
+                contenedorServicios.innerHTML = '';
+
+                servicios.forEach((servicio) => {
+                    const tarjeta = document.createElement('article');
+
+                    tarjeta.className =
+                        'bg-white rounded-xl shadow-md p-6';
+
+                    tarjeta.innerHTML = `
+                        <h3 class="text-xl font-bold">
+                            ${servicio.nombre}
+                        </h3>
+
+                        <p class="text-gray-600 mt-3">
+                            ${servicio.descripcion}
+                        </p>
+
+                        <div class="mt-5 flex justify-between items-center">
+                            <span class="text-xl font-semibold">
+                                $${servicio.precio.toLocaleString('es-AR')}
+                            </span>
+
+                            <span class="text-sm text-gray-500">
+                                ${servicio.duracionMinutos} min
+                            </span>
+                        </div>
+                    `;
+
+                    contenedorServicios.appendChild(tarjeta);
+                });
+
+            } catch (error) {
+                console.error(error);
+
+                if (contenedorServicios) {
+                    contenedorServicios.innerHTML =
+                        '<p>No se pudieron cargar los servicios.</p>';
+                }
+            }
+        }
+
+        async function cargarProductosDestacados() {
+            try {
+                const respuesta = await fetch(
+                    'http://localhost:3000/productos'
+                );
+
+                const productos = await respuesta.json();
+
+                if (!contenedorProductos) return;
+
+                contenedorProductos.innerHTML = '';
+
+                productos.slice(0, 3).forEach((producto) => {
+                    const tarjeta = document.createElement('article');
+
+                    tarjeta.className =
+                        'bg-gray-50 rounded-xl shadow-md overflow-hidden p-4';
+
+                    tarjeta.innerHTML = `
+                        <div class="h-48 bg-white rounded-lg overflow-hidden mb-4">
+                            <img
+                                src="/imagenes/${producto.imagen}"
+                                alt="${producto.nombre}"
+                                class="w-full h-full object-contain p-3"
+                            />
+                        </div>
+
+                        <p class="text-sm text-blue-600 font-medium">
+                            ${producto.categoria}
+                        </p>
+
+                        <h3 class="text-xl font-bold mt-1">
+                            ${producto.nombre}
+                        </h3>
+
+                        <p class="text-2xl font-semibold mt-3">
+                            $${producto.precio.toLocaleString('es-AR')}
+                        </p>
+                    `;
+
+                    contenedorProductos.appendChild(tarjeta);
+                });
+
+            } catch (error) {
+                console.error(error);
+
+                if (contenedorProductos) {
+                    contenedorProductos.innerHTML =
+                        '<p>No se pudieron cargar los productos.</p>';
+                }
+            }
+        }
+
+        function actualizarContadorCarrito() {
+            const carritoGuardado =
+                localStorage.getItem('carrito');
+
+            const carrito = carritoGuardado
+                ? JSON.parse(carritoGuardado)
+                : [];
+
+            const cantidad = carrito.reduce(
+                (total, producto) =>
+                    total + producto.cantidad,
+                0
+            );
+
+            const contador =
+                document.querySelector('#contador-carrito');
+
+            if (contador) {
+                contador.textContent = cantidad.toString();
+            }
+        }
+
+        cargarServicios();
+        cargarProductosDestacados();
+        actualizarContadorCarrito();
+    </script>
+
+</Layout>

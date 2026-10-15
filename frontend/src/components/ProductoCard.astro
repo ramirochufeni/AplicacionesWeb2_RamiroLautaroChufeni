@@ -1,0 +1,46 @@
+---
+const {
+    id,
+    nombre,
+    categoria,
+    precio,
+    stock,
+    imagen,
+    mostrarBoton = true
+} = Astro.props;
+---
+
+<article class="bg-white rounded-xl shadow-md overflow-hidden p-4 hover:shadow-lg transition">
+    <div class="h-48 bg-gray-100 rounded-lg overflow-hidden mb-4">
+        <img
+            src={`/imagenes/${imagen}`}
+            alt={nombre}
+            class="w-full h-full object-contain p-3"
+        />
+    </div>
+
+    <p class="text-sm text-blue-600 font-medium">
+        {categoria}
+    </p>
+
+    <h2 class="text-xl font-bold mt-1">
+        {nombre}
+    </h2>
+
+    <p class="text-2xl font-semibold mt-3">
+        ${precio.toLocaleString('es-AR')}
+    </p>
+
+    <p class="text-sm text-gray-500 mt-2">
+        Stock disponible: {stock}
+    </p>
+
+    {mostrarBoton && (
+        <button
+            class="agregar-carrito mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 cursor-pointer"
+            data-id={id}
+        >
+            Agregar al carrito
+        </button>
+    )}
+</article>

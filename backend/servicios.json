@@ -3,7 +3,7 @@
     "id": 101,
     "nombre": "Limpieza y mantenimiento",
     "descripcion": "Limpieza interna del equipo y mantenimiento preventivo.",
-    "precio": 18000,
+    "precio": 30000,
     "duracionMinutos": 60,
     "disponible": true
   },
@@ -11,7 +11,7 @@
     "id": 102,
     "nombre": "Reinstalacion de sistema operativo",
     "descripcion": "Instalacion y configuracion del sistema operativo.",
-    "precio": 25000,
+    "precio": 35000,
     "duracionMinutos": 120,
     "disponible": true
   },
@@ -19,7 +19,7 @@
     "id": 103,
     "nombre": "Cambio de pasta termica",
     "descripcion": "Cambio de pasta termica del procesador y limpieza basica.",
-    "precio": 12000,
+    "precio": 15000,
     "duracionMinutos": 45,
     "disponible": true
   },
@@ -35,7 +35,7 @@
     "id": 105,
     "nombre": "Armado de PC",
     "descripcion": "Armado completo de una computadora.",
-    "precio": 45000,
+    "precio": 65000,
     "duracionMinutos": 180,
     "disponible": true
   }

@@ -1,0 +1,217 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import FiltroCategorias from '../components/FiltroCategorias.astro';
+---
+
+<Layout title="Productos - RamaTech">
+    <Header />
+
+    <main class="max-w-6xl mx-auto px-4 py-10">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold">
+                Productos
+            </h1>
+
+            <p class="text-gray-600 mt-2">
+                Encontrá componentes y periféricos para tu computadora.
+            </p>
+        </div>
+
+<FiltroCategorias />
+
+        <div
+            id="productos"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+            <p>Cargando productos...</p>
+        </div>
+    </main>
+
+ <script>
+    const contenedor = document.querySelector('#productos');
+
+    // Obtener carrito guardado
+    function obtenerCarrito() {
+        const carritoGuardado = localStorage.getItem('carrito');
+
+        if (carritoGuardado) {
+            return JSON.parse(carritoGuardado);
+        }
+
+        return [];
+    }
+
+    function guardarCarrito(carrito) {
+    localStorage.setItem(
+        'carrito',
+        JSON.stringify(carrito)
+    );
+
+    actualizarContadorCarrito();
+}
+
+// Actualizar cantidad visible del carrito
+function actualizarContadorCarrito() {
+    const carrito = obtenerCarrito();
+
+    const cantidadTotal = carrito.reduce(
+        (total, producto) => total + producto.cantidad,
+        0
+    );
+
+    const contador = document.querySelector('#contador-carrito');
+
+    if (contador) {
+        contador.textContent = cantidadTotal.toString();
+    }
+}
+
+    // Agregar producto al carrito
+    function agregarAlCarrito(producto) {
+        const carrito = obtenerCarrito();
+
+        const productoExistente = carrito.find(
+            item => item.id === producto.id
+        );
+
+        if (productoExistente) {
+
+            if (productoExistente.cantidad >= producto.stock) {
+                alert('No hay más stock disponible de este producto');
+                return;
+            }
+
+            productoExistente.cantidad++;
+        } else {
+            carrito.push({
+                id: producto.id,
+                nombre: producto.nombre,
+                precio: producto.precio,
+                imagen: producto.imagen,
+                stock: producto.stock,
+                cantidad: 1
+            });
+        }
+
+        guardarCarrito(carrito);
+
+        alert(`${producto.nombre} agregado al carrito`);
+    }
+
+    async function cargarProductos(categoria = '') {
+        try {
+            let url = 'http://localhost:3000/productos';
+
+            if (categoria) {
+                url += `?categoria=${encodeURIComponent(categoria)}`;
+            }
+
+            const respuesta = await fetch(url);
+            const productos = await respuesta.json();
+
+            if (!contenedor) return;
+
+            contenedor.innerHTML = '';
+
+            if (productos.length === 0) {
+                contenedor.innerHTML =
+                    '<p>No se encontraron productos.</p>';
+                return;
+            }
+
+            productos.forEach((producto) => {
+                const tarjeta = document.createElement('article');
+
+                tarjeta.className =
+                    'bg-white rounded-lg shadow-md overflow-hidden p-4';
+
+                tarjeta.innerHTML = `
+    <div class="h-48 bg-gray-100 rounded-md overflow-hidden mb-4">
+        <img
+            src="/imagenes/${producto.imagen}"
+            alt="${producto.nombre}"
+            class="w-full h-full object-contain p-3"
+        />
+    </div>
+
+    <p class="text-sm text-blue-600 font-medium">
+        ${producto.categoria}
+    </p>
+
+    <h2 class="text-xl font-bold mt-1">
+        ${producto.nombre}
+    </h2>
+
+    <p class="text-2xl font-semibold mt-3">
+        $${producto.precio.toLocaleString('es-AR')}
+    </p>
+
+    <p class="text-sm text-gray-500 mt-2">
+        Stock disponible: ${producto.stock}
+    </p>
+
+    <button
+        class="agregar-carrito mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 cursor-pointer"
+        data-id="${producto.id}"
+    >
+        Agregar al carrito
+    </button>
+`;
+                const boton = tarjeta.querySelector('.agregar-carrito');
+
+                boton.addEventListener('click', () => {
+                    agregarAlCarrito(producto);
+                });
+
+                contenedor.appendChild(tarjeta);
+            });
+
+        } catch (error) {
+            console.error(error);
+
+            if (contenedor) {
+                contenedor.innerHTML =
+                    '<p>No se pudieron cargar los productos.</p>';
+            }
+        }
+    }
+
+    const botonesFiltro = document.querySelectorAll('.filtro-categoria');
+
+    botonesFiltro.forEach((boton) => {
+        boton.addEventListener('click', () => {
+
+            botonesFiltro.forEach((otroBoton) => {
+                otroBoton.classList.remove(
+                    'bg-slate-900',
+                    'text-white'
+                );
+
+                otroBoton.classList.add(
+                    'bg-white',
+                    'text-gray-900'
+                );
+            });
+
+            boton.classList.remove(
+                'bg-white',
+                'text-gray-900'
+            );
+
+            boton.classList.add(
+                'bg-slate-900',
+                'text-white'
+            );
+
+            const categoria =
+                boton.getAttribute('data-categoria') || '';
+
+            cargarProductos(categoria);
+        });
+    });
+
+    cargarProductos();
+    actualizarContadorCarrito();
+</script>
+</Layout>
