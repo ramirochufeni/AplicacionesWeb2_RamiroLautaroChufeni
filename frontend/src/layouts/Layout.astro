@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Footer from '../components/Footer.astro';
 
 const {
     title = 'RamaTech'
@@ -11,11 +12,67 @@ const {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
-        <meta name="description" content="Tienda de productos de informática" />
+        <meta
+            name="description"
+            content="Tienda de productos de informática"
+        />
         <title>{title}</title>
     </head>
 
-    <body class="min-h-screen bg-gray-100 text-gray-900">
-        <slot />
+    <body class="min-h-screen flex flex-col bg-gray-100 text-gray-900">
+
+        <!-- Contenido de cada página -->
+        <div class="flex-1">
+            <slot />
+        </div>
+
+        <!-- Pie de página compartido -->
+        <Footer />
+
     </body>
 </html>
+
+<script>
+    // Comprobar si el visitante tiene una sesión iniciada
+    async function comprobarAcceso() {
+        try {
+            const respuesta = await fetch(
+                'http://localhost:3000/acceso/sesion',
+                {
+                    credentials: 'include'
+                }
+            );
+
+            // Si no hay sesión, puede acceder al login y registro
+            if (!respuesta.ok) {
+                return;
+            }
+
+            const datos = await respuesta.json();
+
+            if (datos.autenticado !== true) {
+                return;
+            }
+
+            // Ocultar los enlaces de login y registro del footer
+            document.querySelectorAll(
+                'footer a[href="/login"], footer a[href="/registro"]'
+            ).forEach((enlace) => {
+                enlace.classList.add('hidden');
+            });
+
+            // Obtener la página actual
+            const ruta = window.location.pathname.replace(/\/$/, '') || '/';
+
+            // Si ya inició sesión, no necesita login ni registro
+            if (ruta === '/login' || ruta === '/registro') {
+                window.location.replace('/');
+            }
+
+        } catch (error) {
+            console.error('No se pudo comprobar la sesión:', error);
+        }
+    }
+
+    comprobarAcceso();
+</script>

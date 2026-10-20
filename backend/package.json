@@ -1,10 +1,11 @@
 {
   "name": "aw2_ramirochufeni",
   "version": "1.0.0",
-  "description": "El proyecto representa un sistema de gestión de turnos para un servicio técnico de computación. La idea es organizar la información de los clientes, los servicios que ofrece el negocio y los turnos solicitados.",
-  "main": "index.js",
+  "description": "Sistema de gestión para un servicio técnico de computación, con administración de clientes, servicios, turnos, catálogo de productos y órdenes de compra.",
+  "main": "servidor.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node servidor.mjs",
+    "dev": "node --watch servidor.mjs"
   },
   "repository": {
     "type": "git",
@@ -13,13 +14,17 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/ramirochufeni/AplicacionesWeb2_RamiroLautaroChufeni/issues"
   },
   "homepage": "https://github.com/ramirochufeni/AplicacionesWeb2_RamiroLautaroChufeni#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "dotenv": "^18.0.8",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
   }
 }

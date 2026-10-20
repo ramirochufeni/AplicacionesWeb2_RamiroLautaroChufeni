@@ -1,0 +1,218 @@
+
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="Crear cuenta | RamaTech">
+    <Header />
+
+    <main class="max-w-lg mx-auto px-4 py-12">
+        <div class="bg-white rounded-xl shadow-md p-8">
+
+            <h1 class="text-3xl font-bold text-center mb-2">
+                Crear cuenta
+            </h1>
+
+            <p class="text-gray-600 text-center mb-8">
+                Registrate para comprar en RamaTech
+            </p>
+
+            <form id="formulario-registro" class="space-y-5">
+
+                <div>
+                    <label for="nombre" class="block font-medium mb-2">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        required
+                        autocomplete="given-name"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label for="apellido" class="block font-medium mb-2">
+                        Apellido
+                    </label>
+
+                    <input
+                        type="text"
+                        id="apellido"
+                        name="apellido"
+                        required
+                        autocomplete="family-name"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label for="email" class="block font-medium mb-2">
+                        Correo electrónico
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        autocomplete="email"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label for="telefono" class="block font-medium mb-2">
+                        Teléfono
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="telefono"
+                        name="telefono"
+                        required
+                        autocomplete="tel"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label for="clave" class="block font-medium mb-2">
+                        Contraseña
+                    </label>
+
+                    <input
+                        type="password"
+                        id="clave"
+                        name="clave"
+                        required
+                        minlength="8"
+                        maxlength="72"
+                        autocomplete="new-password"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        Mínimo 8 caracteres.
+                    </p>
+                </div>
+
+                <div>
+                    <label for="confirmar-clave" class="block font-medium mb-2">
+                        Confirmar contraseña
+                    </label>
+
+                    <input
+                        type="password"
+                        id="confirmar-clave"
+                        name="confirmarClave"
+                        required
+                        autocomplete="new-password"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <p
+                    id="mensaje-registro"
+                    role="status"
+                    aria-live="polite"
+                    class="text-sm text-center"
+                ></p>
+
+                <button
+                    type="submit"
+                    id="boton-registro"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+                >
+                    Crear cuenta
+                </button>
+
+            </form>
+
+            <p class="text-center text-gray-600 mt-6">
+                ¿Ya tenés una cuenta?
+                <a href="/login" class="text-blue-600 font-semibold hover:underline">
+                    Iniciar sesión
+                </a>
+            </p>
+
+        </div>
+    </main>
+</Layout>
+
+<script>
+    const formulario = document.querySelector<HTMLFormElement>('#formulario-registro');
+    const mensaje = document.querySelector<HTMLParagraphElement>('#mensaje-registro');
+    const boton = document.querySelector<HTMLButtonElement>('#boton-registro');
+
+    formulario?.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+
+        if (!mensaje || !boton) return;
+
+        const datos = new FormData(formulario);
+
+        const nombre = String(datos.get('nombre') ?? '').trim();
+        const apellido = String(datos.get('apellido') ?? '').trim();
+        const email = String(datos.get('email') ?? '').trim();
+        const telefono = String(datos.get('telefono') ?? '').trim();
+        const clave = String(datos.get('clave') ?? '');
+        const confirmarClave = String(datos.get('confirmarClave') ?? '');
+
+        mensaje.textContent = '';
+
+        // Comprobar que las contraseñas coincidan
+        if (clave !== confirmarClave) {
+            mensaje.textContent = 'Las contraseñas no coinciden';
+            mensaje.className = 'text-sm text-center text-red-600';
+            return;
+        }
+
+        boton.disabled = true;
+        boton.textContent = 'Registrando...';
+
+        try {
+            const respuesta = await fetch(
+                'http://localhost:3000/usuarios/registro',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nombre,
+                        apellido,
+                        email,
+                        telefono,
+                        clave
+                    })
+                }
+            );
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+                mensaje.textContent = resultado.mensaje || 'Error al registrarse';
+                mensaje.className = 'text-sm text-center text-red-600';
+                return;
+            }
+
+            mensaje.textContent = 'Cuenta creada correctamente. Ya podés iniciar sesión.';
+            mensaje.className = 'text-sm text-center text-green-600';
+
+            formulario.reset();
+
+        } catch (error) {
+            mensaje.textContent = 'No se pudo conectar con el servidor';
+            mensaje.className = 'text-sm text-center text-red-600';
+
+        } finally {
+            boton.disabled = false;
+            boton.textContent = 'Crear cuenta';
+        }
+    });
+</script>

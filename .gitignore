@@ -1,5 +1,14 @@
 # Dependencias de Node.js
 node_modules/
 
-# Directorio de dependencias generadas por npm
-package-lock.json
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Claves RSA
+backend/api-crud/configuraciones/claves/
+backend/api-crud/configuraciones/*.pem
+
+# Cuentas de usuario locales
+backend/api-crud/datos/usuarios.json

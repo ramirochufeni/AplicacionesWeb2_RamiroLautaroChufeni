@@ -4,7 +4,7 @@
     "nombre": "Memoria RAM Kingston 16GB",
     "categoria": "Memorias",
     "precio": 155000,
-    "stock": 4,
+    "stock": 3,
     "imagen": "ram-kingston.jpg"
   },
   {
@@ -12,7 +12,7 @@
     "nombre": "SSD Kingston 500GB",
     "categoria": "Almacenamiento",
     "precio": 95000,
-    "stock": 4,
+    "stock": 3,
     "imagen": "ssd-kingston.jpg"
   },
   {
@@ -36,7 +36,7 @@
     "nombre": "Fuente Corsair 650W",
     "categoria": "Fuentes",
     "precio": 115000,
-    "stock": 3,
+    "stock": 2,
     "imagen": "fuente-corsair.jpg"
   },
   {
@@ -44,7 +44,7 @@
     "nombre": "SSD NVMe Kingston 1TB",
     "categoria": "Almacenamiento",
     "precio": 180000,
-    "stock": 6,
+    "stock": 5,
     "imagen": "ssd-nvme-kingston.jpg"
   }
 ]

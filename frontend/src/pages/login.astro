@@ -1,0 +1,131 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="Iniciar sesión | RamaTech">
+    <Header />
+
+    <main class="max-w-md mx-auto px-4 py-12">
+        <div class="bg-white rounded-xl shadow-md p-8">
+            <h1 class="text-3xl font-bold text-center mb-2">
+                Iniciar sesión
+            </h1>
+
+            <p class="text-gray-600 text-center mb-8">
+                Ingresá a tu cuenta de RamaTech
+            </p>
+
+            <form id="formulario-login" class="space-y-5">
+                <div>
+                    <label for="email" class="block font-medium mb-2">
+                        Correo electrónico
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        autocomplete="email"
+                        placeholder="Ingresá tu correo"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label for="clave" class="block font-medium mb-2">
+                        Contraseña
+                    </label>
+
+                    <input
+                        type="password"
+                        id="clave"
+                        name="clave"
+                        required
+                        autocomplete="current-password"
+                        placeholder="Ingresá tu contraseña"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <p
+                    id="mensaje-login"
+                    role="status"
+                    aria-live="polite"
+                    class="text-sm text-center"
+                ></p>
+
+                <button
+                    type="submit"
+                    id="boton-login"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+                >
+                    Iniciar sesión
+                </button>
+            </form>
+            <p class="text-center text-gray-600 mt-6">
+    ¿Todavía no tenés una cuenta?
+    <a href="/registro" class="text-blue-600 font-semibold hover:underline">
+        Registrate
+    </a>
+</p>
+        </div>
+    </main>
+</Layout>
+
+<script>
+    const formulario = document.querySelector<HTMLFormElement>('#formulario-login');
+    const mensaje = document.querySelector<HTMLParagraphElement>('#mensaje-login');
+    const boton = document.querySelector<HTMLButtonElement>('#boton-login');
+
+    formulario?.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+
+        if (!mensaje || !boton) return;
+
+        const datos = new FormData(formulario);
+
+        const email = String(datos.get('email') ?? '').trim();
+        const clave = String(datos.get('clave') ?? '');
+
+        mensaje.textContent = '';
+        boton.disabled = true;
+        boton.textContent = 'Ingresando...';
+
+        try {
+            const respuesta = await fetch('http://localhost:3000/acceso/verificar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    email,
+                    clave
+                })
+            });
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+                mensaje.textContent = resultado.mensaje || 'Error al iniciar sesión';
+                mensaje.className = 'text-sm text-center text-red-600';
+                return;
+            }
+
+            mensaje.textContent = 'Sesión iniciada correctamente';
+            mensaje.className = 'text-sm text-center text-green-600';
+
+            window.location.href = '/productos';
+
+        } catch (error) {
+            mensaje.textContent = 'No se pudo conectar con el servidor';
+            mensaje.className = 'text-sm text-center text-red-600';
+
+        } finally {
+            boton.disabled = false;
+            boton.textContent = 'Iniciar sesión';
+        }
+    });
+</script>

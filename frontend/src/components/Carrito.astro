@@ -1,154 +1,47 @@
+
 <section>
     <div
-    id="carrito-contenido"
-    class="space-y-4"
->
-    <p>Cargando carrito...</p>
-</div>
-
-<div
-    id="resumen-carrito"
-    class="hidden mt-8 bg-white rounded-lg shadow-md p-6"
->
-    <div class="mb-6">
-        <label
-            for="cliente"
-            class="block font-semibold mb-2"
-        >
-            Cliente que realiza la compra
-        </label>
-
-        <select
-            id="cliente"
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-        >
-            <option value="">
-                Seleccionar cliente
-            </option>
-        </select>
-    </div>
-
-    <div class="flex justify-between items-center">
-        <span class="text-xl font-semibold">
-            Total
-        </span>
-
-        <span
-            id="total-carrito"
-            class="text-3xl font-bold"
-        >
-            $0
-        </span>
-    </div>
-
-    <button
-        id="boton-comprar"
-        class="mt-6 w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 cursor-pointer"
+        id="carrito-contenido"
+        class="space-y-4"
     >
-        Comprar
-    </button>
-</div>
+        <p>Cargando carrito...</p>
+    </div>
+
+    <div
+        id="resumen-carrito"
+        class="hidden mt-8 bg-white rounded-lg shadow-md p-6"
+    >
+        <div class="flex justify-between items-center">
+            <span class="text-xl font-semibold">
+                Total
+            </span>
+
+            <span
+                id="total-carrito"
+                class="text-3xl font-bold"
+            >
+                $0
+            </span>
+        </div>
+
+        <button
+            id="boton-comprar"
+            type="button"
+            class="mt-6 w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        >
+            Comprar
+        </button>
+    </div>
 </section>
 
 <script>
+    // Elementos del carrito
     const contenedor = document.querySelector('#carrito-contenido');
     const resumen = document.querySelector('#resumen-carrito');
     const totalElemento = document.querySelector('#total-carrito');
-    const selectorCliente = document.querySelector('#cliente');
-    const botonComprar = document.querySelector('#boton-comprar');
+    const botonComprar = document.querySelector<HTMLButtonElement>('#boton-comprar');
 
-    async function cargarClientes() {
-    try {
-        const respuesta = await fetch(
-            'http://localhost:3000/clientes'
-        );
-
-        const clientes = await respuesta.json();
-
-        if (!selectorCliente) return;
-
-        clientes.forEach((cliente) => {
-            const opcion = document.createElement('option');
-
-            opcion.value = cliente.id;
-            opcion.textContent =
-                `${cliente.nombre} ${cliente.apellido}`;
-
-            selectorCliente.appendChild(opcion);
-        });
-
-    } catch (error) {
-        console.error('Error al cargar clientes:', error);
-    }
-}
-
-async function realizarCompra() {
-    const carrito = obtenerCarrito();
-
-    if (carrito.length === 0) {
-        alert('El carrito está vacío');
-        return;
-    }
-
-    if (!selectorCliente || !selectorCliente.value) {
-        alert('Seleccioná un cliente');
-        return;
-    }
-
-    const productos = carrito.map((producto) => ({
-        idProducto: producto.id,
-        cantidad: producto.cantidad
-    }));
-
-    const datosCompra = {
-        idCliente: Number(selectorCliente.value),
-        productos
-    };
-
-    try {
-        const respuesta = await fetch(
-            'http://localhost:3000/ordenes',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(datosCompra)
-            }
-        );
-
-        const resultado = await respuesta.json();
-
-        if (!respuesta.ok) {
-            alert(resultado.mensaje);
-            return;
-        }
-
-        alert(
-            `Compra realizada correctamente. Orden #${resultado.orden.id}`
-        );
-
-        localStorage.removeItem('carrito');
-
-        mostrarCarrito();
-        actualizarContadorCarrito();
-
-    } catch (error) {
-        console.error(error);
-
-        alert(
-            'No se pudo conectar con el servidor'
-        );
-    }
-}
-
-if (botonComprar) {
-    botonComprar.addEventListener(
-        'click',
-        realizarCompra
-    );
-}
-
+    // Obtener los productos guardados en el carrito
     function obtenerCarrito() {
         const carritoGuardado = localStorage.getItem('carrito');
 
@@ -159,6 +52,7 @@ if (botonComprar) {
         return [];
     }
 
+    // Guardar los cambios del carrito
     function guardarCarrito(carrito) {
         localStorage.setItem(
             'carrito',
@@ -169,6 +63,7 @@ if (botonComprar) {
         actualizarContadorCarrito();
     }
 
+    // Actualizar el contador del encabezado
     function actualizarContadorCarrito() {
         const carrito = obtenerCarrito();
 
@@ -184,6 +79,7 @@ if (botonComprar) {
         }
     }
 
+    // Aumentar la cantidad de un producto
     function aumentarCantidad(id) {
         const carrito = obtenerCarrito();
 
@@ -203,6 +99,7 @@ if (botonComprar) {
         guardarCarrito(carrito);
     }
 
+    // Disminuir la cantidad de un producto
     function disminuirCantidad(id) {
         const carrito = obtenerCarrito();
 
@@ -225,6 +122,7 @@ if (botonComprar) {
         guardarCarrito(carrito);
     }
 
+    // Eliminar un producto del carrito
     function eliminarProducto(id) {
         const carrito = obtenerCarrito();
 
@@ -235,6 +133,7 @@ if (botonComprar) {
         guardarCarrito(carritoActualizado);
     }
 
+    // Mostrar los productos del carrito
     function mostrarCarrito() {
         const carrito = obtenerCarrito();
 
@@ -244,6 +143,7 @@ if (botonComprar) {
 
         contenedor.innerHTML = '';
 
+        // Mostrar mensaje si el carrito está vacío
         if (carrito.length === 0) {
             contenedor.innerHTML = `
                 <div class="bg-white rounded-lg shadow-md p-8 text-center">
@@ -270,6 +170,7 @@ if (botonComprar) {
 
         let total = 0;
 
+        // Mostrar cada producto
         carrito.forEach((producto) => {
             const subtotal =
                 producto.precio * producto.cantidad;
@@ -332,11 +233,13 @@ if (botonComprar) {
             contenedor.appendChild(elemento);
         });
 
+        // Mostrar total de la compra
         totalElemento.textContent =
             `$${total.toLocaleString('es-AR')}`;
 
         resumen.classList.remove('hidden');
 
+        // Botones para aumentar cantidades
         document.querySelectorAll('.aumentar').forEach((boton) => {
             boton.addEventListener('click', () => {
                 const id = Number(
@@ -347,6 +250,7 @@ if (botonComprar) {
             });
         });
 
+        // Botones para disminuir cantidades
         document.querySelectorAll('.disminuir').forEach((boton) => {
             boton.addEventListener('click', () => {
                 const id = Number(
@@ -357,6 +261,7 @@ if (botonComprar) {
             });
         });
 
+        // Botones para eliminar productos
         document.querySelectorAll('.eliminar').forEach((boton) => {
             boton.addEventListener('click', () => {
                 const id = Number(
@@ -367,8 +272,96 @@ if (botonComprar) {
             });
         });
     }
-    
-    cargarClientes();
+
+    // Realizar la compra con la sesion del usuario
+    async function realizarCompra() {
+        const carrito = obtenerCarrito();
+
+        if (carrito.length === 0) {
+            alert('El carrito está vacío');
+            return;
+        }
+
+        // Preparar los productos para enviar al backend
+        const productos = carrito.map((producto) => ({
+            idProducto: producto.id,
+            cantidad: producto.cantidad
+        }));
+
+        if (!botonComprar || botonComprar.disabled) {
+            return;
+        }
+
+        // Evitar varios clics durante la compra
+        botonComprar.disabled = true;
+        botonComprar.textContent = 'Procesando compra...';
+
+        try {
+            const respuesta = await fetch(
+                'http://localhost:3000/ordenes',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        productos
+                    })
+                }
+            );
+
+            const resultado = await respuesta.json();
+
+            // Comprobar si el usuario inicio sesion
+            if (respuesta.status === 401) {
+                alert(
+                    'Debés iniciar sesión para comprar. Tu carrito seguirá guardado.'
+                );
+
+                window.location.href = '/login';
+                return;
+            }
+
+            // Mostrar errores de la compra
+            if (!respuesta.ok) {
+                alert(
+                    resultado.mensaje || 'No se pudo realizar la compra'
+                );
+                return;
+            }
+
+            // Confirmar la compra
+            alert(
+                `Compra realizada correctamente. Orden #${resultado.orden.id}`
+            );
+
+            // Vaciar el carrito despues de comprar
+            localStorage.removeItem('carrito');
+
+            mostrarCarrito();
+            actualizarContadorCarrito();
+
+        } catch (error) {
+            console.error('Error al realizar la compra:', error);
+
+            alert(
+                'No se pudo conectar con el servidor'
+            );
+
+        } finally {
+            botonComprar.disabled = false;
+            botonComprar.textContent = 'Comprar';
+        }
+    }
+
+    // Activar el boton de comprar
+    botonComprar?.addEventListener(
+        'click',
+        realizarCompra
+    );
+
+    // Cargar el carrito al abrir la pagina
     mostrarCarrito();
     actualizarContadorCarrito();
 </script>

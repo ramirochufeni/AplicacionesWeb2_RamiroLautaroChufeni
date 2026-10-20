@@ -107,5 +107,57 @@
     ],
     "total": 1135000,
     "fecha": "2026-10-13T21:08:30.926Z"
+  },
+  {
+    "id": 5,
+    "idCliente": 1,
+    "productos": [
+      {
+        "idProducto": 1,
+        "nombre": "Memoria RAM Kingston 16GB",
+        "precio": 155000,
+        "cantidad": 1,
+        "subtotal": 155000
+      }
+    ],
+    "total": 155000,
+    "fecha": "2026-10-19T21:19:49.609Z"
+  },
+  {
+    "id": 6,
+    "idCliente": 8,
+    "productos": [
+      {
+        "idProducto": 2,
+        "nombre": "SSD Kingston 500GB",
+        "precio": 95000,
+        "cantidad": 1,
+        "subtotal": 95000
+      }
+    ],
+    "total": 95000,
+    "fecha": "2026-10-19T23:44:08.212Z"
+  },
+  {
+    "id": 7,
+    "idCliente": 8,
+    "productos": [
+      {
+        "idProducto": 5,
+        "nombre": "Fuente Corsair 650W",
+        "precio": 115000,
+        "cantidad": 1,
+        "subtotal": 115000
+      },
+      {
+        "idProducto": 6,
+        "nombre": "SSD NVMe Kingston 1TB",
+        "precio": 180000,
+        "cantidad": 1,
+        "subtotal": 180000
+      }
+    ],
+    "total": 295000,
+    "fecha": "2026-10-20T00:00:25.529Z"
   }
 ]

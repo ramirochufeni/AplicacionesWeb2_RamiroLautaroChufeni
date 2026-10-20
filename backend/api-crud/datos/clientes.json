@@ -38,5 +38,21 @@
     "email": "gabrielchufeni@gmail.com",
     "telefono": "3468345323",
     "activo": true
+  },
+  {
+    "id": 7,
+    "nombre": "Cliente",
+    "apellido": "Prueba",
+    "email": "registrodeprueba@gmail.com",
+    "telefono": "3468515244",
+    "activo": true
+  },
+  {
+    "id": 8,
+    "nombre": "Liliana",
+    "apellido": "Bessone",
+    "email": "liliana@gmail.com",
+    "telefono": "3468531232",
+    "activo": true
   }
 ]

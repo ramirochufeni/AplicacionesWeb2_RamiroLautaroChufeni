@@ -1,10 +1,10 @@
 <header class="bg-slate-900 text-white shadow-md">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <a href="/" class="text-2xl font-bold">
             RamaTech
         </a>
 
-        <nav class="flex gap-6">
+        <nav class="flex flex-wrap justify-center items-center gap-4 sm:gap-6">
             <a href="/" class="hover:text-blue-300">
                 Inicio
             </a>
@@ -16,6 +16,91 @@
             <a href="/carrito" class="hover:text-blue-300">
                 Carrito (<span id="contador-carrito">0</span>)
             </a>
+
+            <!-- Visible cuando no hay sesión -->
+            <a
+                href="/login"
+                id="enlace-login"
+                class="hover:text-blue-300"
+            >
+                Iniciar sesión
+            </a>
+
+            <!-- Visible cuando hay sesión -->
+            <span
+                id="usuario-sesion"
+                class="hidden text-sm text-blue-300"
+            ></span>
+
+            <button
+                type="button"
+                id="boton-cerrar-sesion"
+                class="hidden hover:text-red-300 cursor-pointer"
+            >
+                Cerrar sesión
+            </button>
         </nav>
     </div>
 </header>
+
+<script>
+    const enlaceLogin = document.querySelector<HTMLAnchorElement>('#enlace-login');
+    const usuarioSesion = document.querySelector<HTMLSpanElement>('#usuario-sesion');
+    const botonCerrar = document.querySelector<HTMLButtonElement>('#boton-cerrar-sesion');
+
+    // Consultar si existe una sesion iniciada
+    async function comprobarSesion() {
+        try {
+            const respuesta = await fetch(
+                'http://localhost:3000/acceso/sesion',
+                {
+                    credentials: 'include'
+                }
+            );
+
+            if (!respuesta.ok) {
+                return;
+            }
+
+            const datos = await respuesta.json();
+
+            if (datos.autenticado) {
+                enlaceLogin?.classList.add('hidden');
+
+                if (usuarioSesion) {
+                    usuarioSesion.textContent = datos.usuario.email;
+                    usuarioSesion.classList.remove('hidden');
+                }
+
+                botonCerrar?.classList.remove('hidden');
+            }
+
+        } catch (error) {
+            console.error('No se pudo comprobar la sesión:', error);
+        }
+    }
+
+    // Cerrar sesión
+    botonCerrar?.addEventListener('click', async () => {
+        try {
+            const respuesta = await fetch(
+                'http://localhost:3000/acceso/cerrar',
+                {
+                    method: 'POST',
+                    credentials: 'include'
+                }
+            );
+
+            if (!respuesta.ok) {
+                throw new Error('No se pudo cerrar sesión');
+            }
+
+            window.location.href = '/';
+
+        } catch (error) {
+            alert('Ocurrió un error al cerrar sesión');
+        }
+    });
+
+    comprobarSesion();
+</script>
