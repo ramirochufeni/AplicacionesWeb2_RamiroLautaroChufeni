@@ -1,51 +1,38 @@
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { obtenerBaseDatos } from '../../configuraciones/conexion.mongodb.mjs';
 
-const ARCHIVO_CLIENTES = fileURLToPath(
-    new URL('../../datos/clientes.json', import.meta.url)
-);
+// Obtener todos los clientes
+async function obtenerClientes() {
+    const db = obtenerBaseDatos();
 
-const ARCHIVO_TURNOS = fileURLToPath(
-    new URL('../../datos/turnos.json', import.meta.url)
-);
-
-const ARCHIVO_ORDENES = fileURLToPath(
-    new URL('../../datos/ordenes.json', import.meta.url)
-);
-
-// Lee los clientes del archivo JSON
-function leerArchivo() {
-    const datos = fs.readFileSync(ARCHIVO_CLIENTES, 'utf-8');
-    return JSON.parse(datos);
+    return await db.collection('clientes')
+        .find({})
+        .project({ _id: 0 })
+        .sort({ id: 1 })
+        .toArray();
 }
 
-// Guarda los clientes en el archivo JSON
-function escribirArchivo(clientes) {
-    fs.writeFileSync(
-        ARCHIVO_CLIENTES,
-        JSON.stringify(clientes, null, 2)
+// Obtener un cliente por ID
+async function obtenerCliente(id) {
+    const db = obtenerBaseDatos();
+
+    return await db.collection('clientes').findOne(
+        { id },
+        { projection: { _id: 0 } }
     );
 }
 
-
-function obtenerClientes() {
-    return leerArchivo();
-}
-
-
-function obtenerCliente(id) {
-    const clientes = leerArchivo();
-
-    return clientes.find(cliente => cliente.id === id) || null;
-}
-
 // Agregar un nuevo cliente
-function agregarCliente(datosCliente) {
-    const clientes = leerArchivo();
+async function agregarCliente(datosCliente) {
+    const db = obtenerBaseDatos();
+    const coleccion = db.collection('clientes');
 
-    const nuevoId = clientes.length > 0
-        ? Math.max(...clientes.map(cliente => cliente.id)) + 1
-        : 1;
+    const ultimoCliente = await coleccion
+        .find({})
+        .sort({ id: -1 })
+        .limit(1)
+        .next();
+
+    const nuevoId = ultimoCliente ? ultimoCliente.id + 1 : 1;
 
     const nuevoCliente = {
         id: nuevoId,
@@ -56,79 +43,62 @@ function agregarCliente(datosCliente) {
         activo: true
     };
 
-    clientes.push(nuevoCliente);
+    await coleccion.insertOne(nuevoCliente);
 
-    escribirArchivo(clientes);
+    const { _id, ...clienteSinIdMongo } = nuevoCliente;
 
-    return nuevoCliente;
+    return clienteSinIdMongo;
 }
 
-// Modificar un cliente existente
-function modificarCliente(id, datosCliente) {
-    const clientes = leerArchivo();
+// Modificar un cliente
+async function modificarCliente(id, datosCliente) {
+    const db = obtenerBaseDatos();
+    const coleccion = db.collection('clientes');
 
-    const indice = clientes.findIndex(
-        cliente => cliente.id === id
+    const resultado = await coleccion.updateOne(
+        { id },
+        {
+            $set: {
+                nombre: datosCliente.nombre,
+                apellido: datosCliente.apellido,
+                email: datosCliente.email,
+                telefono: datosCliente.telefono,
+                activo: datosCliente.activo
+            }
+        }
     );
 
-    if (indice === -1) {
+    if (resultado.matchedCount === 0) {
         return null;
     }
 
-    clientes[indice] = {
-        id,
-        nombre: datosCliente.nombre,
-        apellido: datosCliente.apellido,
-        email: datosCliente.email,
-        telefono: datosCliente.telefono,
-        activo: datosCliente.activo
-    };
+    return await obtenerCliente(id);
+}
 
-    escribirArchivo(clientes);
+// Verificar si un cliente tiene datos relacionados
+async function tieneRelaciones(id) {
+    const db = obtenerBaseDatos();
 
-    return clientes[indice];
+    const [turno, orden, usuario] = await Promise.all([
+        db.collection('turnos').findOne({ idCliente: id }),
+        db.collection('ordenes').findOne({ idCliente: id }),
+        db.collection('usuarios').findOne({ idCliente: id })
+    ]);
+
+    return Boolean(turno || orden || usuario);
 }
 
 // Eliminar un cliente
-function eliminarCliente(id) {
-    const clientes = leerArchivo();
+async function eliminarCliente(id) {
+    const db = obtenerBaseDatos();
 
-    const cliente = clientes.find(
-        cliente => cliente.id === id
-    );
-
-    if (!cliente) {
+    if (await tieneRelaciones(id)) {
         return false;
     }
 
-    const clientesActualizados = clientes.filter(
-        cliente => cliente.id !== id
-    );
+    const resultado = await db.collection('clientes').deleteOne({ id });
 
-    escribirArchivo(clientesActualizados);
-
-    return true;
-}
-
-// Verificar si un cliente tiene turnos u órdenes
-function tieneRelaciones(id) {
-    const turnos = JSON.parse(
-        fs.readFileSync(ARCHIVO_TURNOS, 'utf-8')
-    );
-
-    const ordenes = JSON.parse(
-        fs.readFileSync(ARCHIVO_ORDENES, 'utf-8')
-    );
-
-    const tieneTurnos = turnos.some(
-        turno => turno.idCliente === id
-    );
-
-    const tieneOrdenes = ordenes.some(
-        orden => orden.idCliente === id
-    );
-
-    return tieneTurnos || tieneOrdenes;
+    return resultado.deletedCount > 0;
 }
 
 export default {

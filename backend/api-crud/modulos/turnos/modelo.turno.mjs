@@ -1,37 +1,29 @@
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-
-const ARCHIVO_TURNOS = fileURLToPath(
-    new URL('../../datos/turnos.json', import.meta.url)
-);
-
-// Leer los turnos del archivo JSON
-function leerArchivo() {
-    const datos = fs.readFileSync(ARCHIVO_TURNOS, 'utf-8');
-    return JSON.parse(datos);
-}
-
-// Guardar los turnos en el archivo JSON
-function escribirArchivo(turnos) {
-    fs.writeFileSync(
-        ARCHIVO_TURNOS,
-        JSON.stringify(turnos, null, 2)
-    );
-}
+import { obtenerBaseDatos } from '../../configuraciones/conexion.mongodb.mjs';
 
 // Obtener todos los turnos
-function obtenerTurnos() {
-    return leerArchivo();
+async function obtenerTurnos() {
+    const db = obtenerBaseDatos();
+
+    return await db.collection('turnos')
+        .find({})
+        .project({ _id: 0 })
+        .sort({ id: 1 })
+        .toArray();
 }
 
 // Agregar un nuevo turno
-function agregarTurno(datosTurno) {
-    const turnos = leerArchivo();
+async function agregarTurno(datosTurno) {
+    const db = obtenerBaseDatos();
+    const coleccion = db.collection('turnos');
 
-    // Generar un ID para el nuevo turno
-    const nuevoId = turnos.length > 0
-        ? Math.max(...turnos.map(turno => turno.id)) + 1
-        : 1001;
+    // Obtener el último ID registrado
+    const ultimoTurno = await coleccion
+        .find({})
+        .sort({ id: -1 })
+        .limit(1)
+        .next();
+
+    const nuevoId = ultimoTurno ? ultimoTurno.id + 1 : 1001;
 
     const nuevoTurno = {
         id: nuevoId,
@@ -45,11 +37,12 @@ function agregarTurno(datosTurno) {
         finalizado: false
     };
 
-    turnos.push(nuevoTurno);
+    // Guardar el turno en MongoDB
+    await coleccion.insertOne(nuevoTurno);
 
-    escribirArchivo(turnos);
+    const { _id, ...turnoSinIdMongo } = nuevoTurno;
 
-    return nuevoTurno;
+    return turnoSinIdMongo;
 }
 
 export default {

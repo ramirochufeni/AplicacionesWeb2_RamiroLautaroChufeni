@@ -1,59 +1,51 @@
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { obtenerBaseDatos } from '../../configuraciones/conexion.mongodb.mjs';
 
-// Ruta del archivo JSON de usuarios
-const ARCHIVO_USUARIOS = fileURLToPath(
-    new URL('../../datos/usuarios.json', import.meta.url)
-);
+// Obtener un usuario por email
+async function obtenerUsuarioPorEmail(email) {
+    if (typeof email !== 'string' || !email.trim()) {
+        return null;
+    }
 
-// Leer los usuarios
-function leerArchivo() {
-    const datos = fs.readFileSync(ARCHIVO_USUARIOS, 'utf-8');
-    return JSON.parse(datos);
-}
+    const db = obtenerBaseDatos();
 
-// Guardar los usuarios
-function escribirArchivo(usuarios) {
-    fs.writeFileSync(
-        ARCHIVO_USUARIOS,
-        JSON.stringify(usuarios, null, 2)
+    return await db.collection('usuarios').findOne(
+        { email: email.trim().toLowerCase() },
+        { projection: { _id: 0 } }
     );
 }
 
-// Obtener un usuario por email
-function obtenerUsuarioPorEmail(email) {
-    const usuarios = leerArchivo();
-
-    return usuarios.find(
-        usuario => usuario.email === email.trim().toLowerCase()
-    ) || null;
-}
-
 // Obtener un usuario por ID
-function obtenerUsuario(id) {
-    const usuarios = leerArchivo();
+async function obtenerUsuario(id) {
+    const db = obtenerBaseDatos();
 
-    return usuarios.find(
-        usuario => usuario.id === id
-    ) || null;
+    return await db.collection('usuarios').findOne(
+        { id },
+        { projection: { _id: 0 } }
+    );
 }
 
 // Buscar si un cliente ya tiene una cuenta
-function obtenerUsuarioPorCliente(idCliente) {
-    const usuarios = leerArchivo();
+async function obtenerUsuarioPorCliente(idCliente) {
+    const db = obtenerBaseDatos();
 
-    return usuarios.find(
-        usuario => usuario.idCliente === idCliente
-    ) || null;
+    return await db.collection('usuarios').findOne(
+        { idCliente },
+        { projection: { _id: 0 } }
+    );
 }
 
 // Agregar un nuevo usuario
-function agregarUsuario(datosUsuario) {
-    const usuarios = leerArchivo();
+async function agregarUsuario(datosUsuario) {
+    const db = obtenerBaseDatos();
+    const coleccion = db.collection('usuarios');
 
-    const nuevoId = usuarios.length > 0
-        ? Math.max(...usuarios.map(usuario => usuario.id)) + 1
-        : 1;
+    const ultimoUsuario = await coleccion
+        .find({})
+        .sort({ id: -1 })
+        .limit(1)
+        .next();
+
+    const nuevoId = ultimoUsuario ? ultimoUsuario.id + 1 : 1;
 
     const nuevoUsuario = {
         id: nuevoId,
@@ -63,11 +55,11 @@ function agregarUsuario(datosUsuario) {
         rol: 'cliente'
     };
 
-    usuarios.push(nuevoUsuario);
+    await coleccion.insertOne(nuevoUsuario);
 
-    escribirArchivo(usuarios);
+    const { _id, ...usuarioSinIdMongo } = nuevoUsuario;
 
-    return nuevoUsuario;
+    return usuarioSinIdMongo;
 }
 
 export default {

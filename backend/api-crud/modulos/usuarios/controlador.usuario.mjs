@@ -41,7 +41,7 @@ async function registrarUsuario(peticion, respuesta) {
 
     try {
         // Verificar si el usuario ya existe
-        const usuarioExistente = modelo.obtenerUsuarioPorEmail(
+        const usuarioExistente = await modelo.obtenerUsuarioPorEmail(
             emailNormalizado
         );
 
@@ -51,8 +51,8 @@ async function registrarUsuario(peticion, respuesta) {
             });
         }
 
-        // Comprobar que el email no pertenece a otro cliente
-        const clientes = modeloClientes.obtenerClientes();
+        // Comprobar que el email no pertenezca a otro cliente
+        const clientes = await modeloClientes.obtenerClientes();
 
         const clienteExistente = clientes.some(
             cliente =>
@@ -66,19 +66,19 @@ async function registrarUsuario(peticion, respuesta) {
             });
         }
 
-        // Proteger la contraseña
+        // Proteger la contraseña con bcrypt
         const claveHash = await hashing.hashClave(clave);
 
-        // Crear el cliente
-        const nuevoCliente = modeloClientes.agregarCliente({
+        // Crear el cliente en MongoDB
+        const nuevoCliente = await modeloClientes.agregarCliente({
             nombre: nombre.trim(),
             apellido: apellido.trim(),
             email: emailNormalizado,
             telefono: telefono.trim()
         });
 
-        // Crear la cuenta vinculada al cliente
-        const nuevoUsuario = modelo.agregarUsuario({
+        // Crear el usuario vinculado al cliente
+        const nuevoUsuario = await modelo.agregarUsuario({
             idCliente: nuevoCliente.id,
             email: emailNormalizado,
             claveHash
@@ -97,6 +97,12 @@ async function registrarUsuario(peticion, respuesta) {
 
     } catch (error) {
         console.error(error);
+
+        if (error.code === 11000) {
+            return respuesta.status(409).json({
+                mensaje: 'Ya existe un registro con esos datos'
+            });
+        }
 
         return respuesta.status(500).json({
             mensaje: 'Error al registrar el usuario'

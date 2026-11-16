@@ -1,12 +1,11 @@
 import modelo from './modelo.producto.mjs';
 
 // GET - Obtener productos y filtrar por categoría
-function obtenerProductos(peticion, respuesta) {
+async function obtenerProductos(peticion, respuesta) {
     try {
-        const productos = modelo.obtenerProductos();
+        const productos = await modelo.obtenerProductos();
 
         const categoria = peticion.query.categoria;
-
 
         if (!categoria) {
             return respuesta.status(200).json(productos);

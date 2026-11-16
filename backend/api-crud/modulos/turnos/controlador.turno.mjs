@@ -3,9 +3,9 @@ import modeloClientes from '../clientes/modelo.cliente.mjs';
 import modeloServicios from '../servicios/modelo.servicio.mjs';
 
 // GET - Obtener todos los turnos
-function obtenerTurnos(peticion, respuesta) {
+async function obtenerTurnos(peticion, respuesta) {
     try {
-        const turnos = modelo.obtenerTurnos();
+        const turnos = await modelo.obtenerTurnos();
 
         return respuesta.status(200).json(turnos);
 
@@ -19,7 +19,7 @@ function obtenerTurnos(peticion, respuesta) {
 }
 
 // POST - Crear un nuevo turno
-function agregarTurno(peticion, respuesta) {
+async function agregarTurno(peticion, respuesta) {
     const {
         idCliente,
         fecha,
@@ -43,9 +43,22 @@ function agregarTurno(peticion, respuesta) {
         });
     }
 
+    // Validar los IDs de los servicios
+    const idsValidos = servicios.every(
+        id => Number.isSafeInteger(id) && id > 0
+    );
+
+    const sinRepetidos = new Set(servicios).size === servicios.length;
+
+    if (!idsValidos || !sinRepetidos) {
+        return respuesta.status(400).json({
+            mensaje: 'Uno o más servicios son inválidos o están repetidos'
+        });
+    }
+
     try {
-        // Verificar que el cliente exista
-        const cliente = modeloClientes.obtenerCliente(idCliente);
+        // Verificar que el cliente exista en MongoDB
+        const cliente = await modeloClientes.obtenerCliente(idCliente);
 
         if (!cliente) {
             return respuesta.status(404).json({
@@ -53,28 +66,18 @@ function agregarTurno(peticion, respuesta) {
             });
         }
 
-        // Obtener los servicios disponibles
-        const serviciosDisponibles = modeloServicios.obtenerServicios();
+        // Obtener los servicios disponibles desde MongoDB
+        const serviciosDisponibles = await modeloServicios.obtenerServicios();
 
         // Buscar los servicios solicitados
         const serviciosEncontrados = serviciosDisponibles.filter(
             servicio => servicios.includes(servicio.id)
         );
 
-        // Verificar que todos los servicios existan
-        const idsValidos = servicios.every(
-            id => Number.isSafeInteger(id) && id > 0
-        );
-
-        const sinRepetidos = new Set(servicios).size === servicios.length;
-
-        if (
-            !idsValidos ||
-            !sinRepetidos ||
-            serviciosEncontrados.length !== servicios.length
-        ) {
+        // Comprobar que todos existan
+        if (serviciosEncontrados.length !== servicios.length) {
             return respuesta.status(400).json({
-                mensaje: 'Uno o más servicios son inválidos o están repetidos'
+                mensaje: 'Uno o más servicios no existen'
             });
         }
 
@@ -84,8 +87,8 @@ function agregarTurno(peticion, respuesta) {
             0
         );
 
-        // Guardar el nuevo turno mediante el modelo
-        const nuevoTurno = modelo.agregarTurno({
+        // Guardar el turno en MongoDB
+        const nuevoTurno = await modelo.agregarTurno({
             idCliente,
             fecha,
             hora,
@@ -101,6 +104,12 @@ function agregarTurno(peticion, respuesta) {
 
     } catch (error) {
         console.error(error);
+
+        if (error.code === 11000) {
+            return respuesta.status(409).json({
+                mensaje: 'No se pudo generar un ID único para el turno'
+            });
+        }
 
         return respuesta.status(500).json({
             mensaje: 'Error al crear el turno'

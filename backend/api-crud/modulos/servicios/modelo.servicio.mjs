@@ -1,19 +1,14 @@
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { obtenerBaseDatos } from '../../configuraciones/conexion.mongodb.mjs';
 
-const ARCHIVO_SERVICIOS = fileURLToPath(
-    new URL('../../datos/servicios.json', import.meta.url)
-);
+// Obtener todos los servicios desde MongoDB
+async function obtenerServicios() {
+    const db = obtenerBaseDatos();
 
-// Leer los servicios del archivo JSON
-function leerArchivo() {
-    const datos = fs.readFileSync(ARCHIVO_SERVICIOS, 'utf-8');
-    return JSON.parse(datos);
-}
-
-// Obtener todos los servicios
-function obtenerServicios() {
-    return leerArchivo();
+    return await db.collection('servicios')
+        .find({})
+        .project({ _id: 0 })
+        .sort({ id: 1 })
+        .toArray();
 }
 
 export default {

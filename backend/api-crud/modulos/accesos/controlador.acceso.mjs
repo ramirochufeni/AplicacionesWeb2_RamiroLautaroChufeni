@@ -14,7 +14,6 @@ const OPCIONES_COOKIE = {
 async function verificarAcceso(peticion, respuesta) {
     const { email, clave } = peticion.body ?? {};
 
-
     if (
         typeof email !== 'string' ||
         !email.trim() ||
@@ -27,7 +26,8 @@ async function verificarAcceso(peticion, respuesta) {
     }
 
     try {
-        const usuario = modelo.verificarAcceso({
+        // Buscar al usuario en MongoDB
+        const usuario = await modelo.verificarAcceso({
             email: email.trim().toLowerCase()
         });
 
@@ -37,6 +37,7 @@ async function verificarAcceso(peticion, respuesta) {
             });
         }
 
+        // Verificar la contraseña con bcrypt
         const claveCorrecta = await hashing.compararClave(
             clave,
             usuario.claveHash
@@ -48,6 +49,7 @@ async function verificarAcceso(peticion, respuesta) {
             });
         }
 
+        // Crear el JWT
         const datosToken = {
             id: usuario.id,
             idCliente: usuario.idCliente,
@@ -56,6 +58,7 @@ async function verificarAcceso(peticion, respuesta) {
 
         const token = firmarToken(datosToken);
 
+        // Guardar el JWT en una cookie
         respuesta.cookie('_auth', token, {
             ...OPCIONES_COOKIE,
             maxAge: 30 * 24 * 60 * 60 * 1000
@@ -89,8 +92,12 @@ function cerrarSesion(peticion, respuesta) {
     });
 }
 
-// GET - Consultar la sesión del usuario
+// GET - Consultar la sesión actual
 function obtenerSesion(peticion, respuesta) {
+
+    // Evitar que el navegador almacene la sesión en caché
+    respuesta.set('Cache-Control', 'no-store');
+
     return respuesta.status(200).json({
         autenticado: true,
         usuario: peticion.usuario

@@ -1,9 +1,9 @@
 import modelo from './modelo.servicio.mjs';
 
 // GET - Obtener todos los servicios
-function obtenerServicios(peticion, respuesta) {
+async function obtenerServicios(peticion, respuesta) {
     try {
-        const servicios = modelo.obtenerServicios();
+        const servicios = await modelo.obtenerServicios();
 
         return respuesta.status(200).json(servicios);
 

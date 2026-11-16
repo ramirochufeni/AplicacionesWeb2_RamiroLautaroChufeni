@@ -1,9 +1,9 @@
 import modelo from './modelo.cliente.mjs';
 
 // GET - Obtener todos los clientes
-function obtenerClientes(peticion, respuesta) {
+async function obtenerClientes(peticion, respuesta) {
     try {
-        const clientes = modelo.obtenerClientes();
+        const clientes = await modelo.obtenerClientes();
 
         return respuesta.status(200).json(clientes);
 
@@ -17,7 +17,7 @@ function obtenerClientes(peticion, respuesta) {
 }
 
 // GET - Obtener un cliente por ID
-function obtenerCliente(peticion, respuesta) {
+async function obtenerCliente(peticion, respuesta) {
     const id = Number(peticion.params.id);
 
     if (!Number.isSafeInteger(id) || id <= 0) {
@@ -27,7 +27,7 @@ function obtenerCliente(peticion, respuesta) {
     }
 
     try {
-        const cliente = modelo.obtenerCliente(id);
+        const cliente = await modelo.obtenerCliente(id);
 
         if (!cliente) {
             return respuesta.status(404).json({
@@ -47,7 +47,7 @@ function obtenerCliente(peticion, respuesta) {
 }
 
 // POST - Crear un cliente
-function agregarCliente(peticion, respuesta) {
+async function agregarCliente(peticion, respuesta) {
     const { nombre, apellido, email, telefono } = peticion.body ?? {};
 
     if ([nombre, apellido, email, telefono].some(
@@ -59,7 +59,7 @@ function agregarCliente(peticion, respuesta) {
     }
 
     try {
-        const nuevoCliente = modelo.agregarCliente({
+        const nuevoCliente = await modelo.agregarCliente({
             nombre,
             apellido,
             email,
@@ -81,7 +81,7 @@ function agregarCliente(peticion, respuesta) {
 }
 
 // PUT - Actualizar un cliente
-function modificarCliente(peticion, respuesta) {
+async function modificarCliente(peticion, respuesta) {
     const id = Number(peticion.params.id);
 
     if (!Number.isSafeInteger(id) || id <= 0) {
@@ -104,7 +104,7 @@ function modificarCliente(peticion, respuesta) {
     }
 
     try {
-        const cliente = modelo.modificarCliente(id, {
+        const cliente = await modelo.modificarCliente(id, {
             nombre,
             apellido,
             email,
@@ -133,7 +133,7 @@ function modificarCliente(peticion, respuesta) {
 }
 
 // DELETE - Eliminar un cliente
-function eliminarCliente(peticion, respuesta) {
+async function eliminarCliente(peticion, respuesta) {
     const id = Number(peticion.params.id);
 
     if (!Number.isSafeInteger(id) || id <= 0) {
@@ -143,7 +143,7 @@ function eliminarCliente(peticion, respuesta) {
     }
 
     try {
-        const cliente = modelo.obtenerCliente(id);
+        const cliente = await modelo.obtenerCliente(id);
 
         if (!cliente) {
             return respuesta.status(404).json({
@@ -152,13 +152,19 @@ function eliminarCliente(peticion, respuesta) {
         }
 
         // Verificar relaciones antes de eliminar
-        if (modelo.tieneRelaciones(id)) {
+        if (await modelo.tieneRelaciones(id)) {
             return respuesta.status(409).json({
-                mensaje: 'No se puede eliminar el cliente porque tiene turnos u órdenes asociadas'
+                mensaje: 'No se puede eliminar el cliente porque tiene turnos, órdenes o una cuenta asociada'
             });
         }
 
-        modelo.eliminarCliente(id);
+        const eliminado = await modelo.eliminarCliente(id);
+
+        if (!eliminado) {
+            return respuesta.status(409).json({
+                mensaje: 'No se pudo eliminar el cliente'
+            });
+        }
 
         return respuesta.status(200).json({
             mensaje: 'Cliente eliminado correctamente'

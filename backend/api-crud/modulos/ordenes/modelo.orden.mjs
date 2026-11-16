@@ -1,38 +1,29 @@
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { obtenerBaseDatos } from '../../configuraciones/conexion.mongodb.mjs';
 
-// Ruta del archivo JSON de ordenes
-const ARCHIVO_ORDENES = fileURLToPath(
-    new URL('../../datos/ordenes.json', import.meta.url)
-);
+// Obtener todas las órdenes
+async function obtenerOrdenes() {
+    const db = obtenerBaseDatos();
 
-// Leer las ordenes del archivo JSON
-function leerArchivo() {
-    const datos = fs.readFileSync(ARCHIVO_ORDENES, 'utf-8');
-    return JSON.parse(datos);
-}
-
-// Guardar las ordenes en el archivo JSON
-function escribirArchivo(ordenes) {
-    fs.writeFileSync(
-        ARCHIVO_ORDENES,
-        JSON.stringify(ordenes, null, 2)
-    );
-}
-
-// Obtener todas las ordenes
-function obtenerOrdenes() {
-    return leerArchivo();
+    return await db.collection('ordenes')
+        .find({})
+        .project({ _id: 0 })
+        .sort({ id: 1 })
+        .toArray();
 }
 
 // Agregar una nueva orden
-function agregarOrden(datosOrden) {
-    const ordenes = leerArchivo();
+async function agregarOrden(datosOrden) {
+    const db = obtenerBaseDatos();
+    const coleccion = db.collection('ordenes');
 
-    // Generar un ID para la nueva orden
-    const nuevoId = ordenes.length > 0
-        ? Math.max(...ordenes.map(orden => orden.id)) + 1
-        : 1;
+    // Obtener el último ID registrado
+    const ultimaOrden = await coleccion
+        .find({})
+        .sort({ id: -1 })
+        .limit(1)
+        .next();
+
+    const nuevoId = ultimaOrden ? ultimaOrden.id + 1 : 1;
 
     const nuevaOrden = {
         id: nuevoId,
@@ -42,11 +33,11 @@ function agregarOrden(datosOrden) {
         fecha: new Date().toISOString()
     };
 
-    ordenes.push(nuevaOrden);
+    await coleccion.insertOne(nuevaOrden);
 
-    escribirArchivo(ordenes);
+    const { _id, ...ordenSinIdMongo } = nuevaOrden;
 
-    return nuevaOrden;
+    return ordenSinIdMongo;
 }
 
 export default {

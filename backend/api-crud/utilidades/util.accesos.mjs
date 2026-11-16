@@ -1,13 +1,13 @@
 import { verificarToken } from './util.jwt.mjs';
 import modeloUsuarios from '../modulos/usuarios/modelo.usuario.mjs';
 
-// Comprobar que el usuario inicio sesion
-function verificarTokenAcceso(peticion, respuesta, siguiente) {
+// Comprobar que el usuario inició sesión
+async function verificarTokenAcceso(peticion, respuesta, siguiente) {
 
     // Obtener el token de la cookie
     const token = peticion.cookies?._auth;
 
-    // Comprobar si existe una sesion
+    // Comprobar si existe una sesión
     if (!token) {
         return respuesta.status(401).json({
             mensaje: 'Debés iniciar sesión'
@@ -18,8 +18,8 @@ function verificarTokenAcceso(peticion, respuesta, siguiente) {
         // Verificar que el token sea válido
         const datos = verificarToken(token);
 
-        // Comprobar que el usuario todavía exista
-        const usuario = modeloUsuarios.obtenerUsuario(datos.id);
+        // Comprobar en MongoDB que el usuario todavía exista
+        const usuario = await modeloUsuarios.obtenerUsuario(datos.id);
 
         if (
             !usuario ||
@@ -39,9 +39,11 @@ function verificarTokenAcceso(peticion, respuesta, siguiente) {
             rol: usuario.rol
         };
 
-        siguiente();
+        return siguiente();
 
     } catch (error) {
+        console.error('Error al verificar la sesión:', error);
+
         return respuesta.status(401).json({
             mensaje: 'Sesión inválida o vencida'
         });

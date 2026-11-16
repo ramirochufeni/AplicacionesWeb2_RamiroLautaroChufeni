@@ -3,13 +3,11 @@ import modeloClientes from '../clientes/modelo.cliente.mjs';
 import modeloProductos from '../productos/modelo.producto.mjs';
 
 // POST - Crear una nueva orden de compra
-function agregarOrden(peticion, respuesta) {
-const idCliente = peticion.usuario.idCliente;
+async function agregarOrden(peticion, respuesta) {
+    const idCliente = peticion.usuario?.idCliente;
+    const { productos } = peticion.body ?? {};
 
-// Obtener los productos enviados desde el carrito
-const { productos } = peticion.body ?? {};
-
-    // Validar los datos obligatorios
+    // Validar datos obligatorios
     if (
         !Number.isSafeInteger(idCliente) ||
         idCliente <= 0 ||
@@ -23,7 +21,7 @@ const { productos } = peticion.body ?? {};
 
     try {
         // Verificar que el cliente exista
-        const cliente = modeloClientes.obtenerCliente(idCliente);
+        const cliente = await modeloClientes.obtenerCliente(idCliente);
 
         if (!cliente) {
             return respuesta.status(404).json({
@@ -31,16 +29,15 @@ const { productos } = peticion.body ?? {};
             });
         }
 
-        // Obtener los productos disponibles
-        const productosDisponibles = modeloProductos.obtenerProductos();
+        // Obtener los productos desde MongoDB
+        const productosDisponibles = await modeloProductos.obtenerProductos();
 
         let total = 0;
         const detalleProductos = [];
         const idsAgregados = new Set();
 
-        // Verificar productos, cantidades y stock
+        // Validar productos, cantidades y stock
         for (const item of productos) {
-
             if (
                 !item ||
                 !Number.isSafeInteger(item.idProducto) ||
@@ -53,7 +50,6 @@ const { productos } = peticion.body ?? {};
                 });
             }
 
-            // Evitar productos repetidos en la misma orden
             if (idsAgregados.has(item.idProducto)) {
                 return respuesta.status(400).json({
                     mensaje: 'Hay productos repetidos en la orden'
@@ -78,9 +74,7 @@ const { productos } = peticion.body ?? {};
                 });
             }
 
-            // Calcular subtotal
             const subtotal = producto.precio * item.cantidad;
-
             total += subtotal;
 
             detalleProductos.push({
@@ -92,29 +86,72 @@ const { productos } = peticion.body ?? {};
             });
         }
 
-        // Descontar stock de los productos
-        for (const item of productos) {
-            const producto = productosDisponibles.find(
-                producto => producto.id === item.idProducto
-            );
+        const productosDescontados = [];
 
-            producto.stock -= item.cantidad;
+        try {
+            // Descontar el stock verificando nuevamente su disponibilidad
+            for (const item of detalleProductos) {
+                const descontado = await modeloProductos.descontarStock(
+                    item.idProducto,
+                    item.cantidad
+                );
+
+                if (!descontado) {
+                    const error = new Error(
+                        `No hay stock suficiente de ${item.nombre}`
+                    );
+
+                    error.codigo = 'STOCK_INSUFICIENTE';
+                    throw error;
+                }
+
+                productosDescontados.push(item);
+            }
+
+            // Guardar la orden en MongoDB
+            const nuevaOrden = await modelo.agregarOrden({
+                idCliente,
+                productos: detalleProductos,
+                total
+            });
+
+            return respuesta.status(201).json({
+                mensaje: 'Orden creada correctamente',
+                orden: nuevaOrden
+            });
+
+        } catch (error) {
+            // Intentar recuperar el stock si la compra falló
+            let restauracionCorrecta = true;
+
+            for (const item of productosDescontados.reverse()) {
+                try {
+                    await modeloProductos.restaurarStock(
+                        item.idProducto,
+                        item.cantidad
+                    );
+                } catch (errorRestauracion) {
+                    restauracionCorrecta = false;
+                    console.error('Error al restaurar stock:', errorRestauracion);
+                }
+            }
+
+            if (!restauracionCorrecta) {
+                console.error('Se requiere revisar manualmente el stock');
+
+                return respuesta.status(500).json({
+                    mensaje: 'Error al crear la orden. Es necesario revisar el stock'
+                });
+            }
+
+            if (error.codigo === 'STOCK_INSUFICIENTE') {
+                return respuesta.status(409).json({
+                    mensaje: error.message
+                });
+            }
+
+            throw error;
         }
-
-        // Guardar la orden mediante el modelo
-        const nuevaOrden = modelo.agregarOrden({
-            idCliente,
-            productos: detalleProductos,
-            total
-        });
-
-        // Guardar el stock actualizado
-        modeloProductos.guardarProductos(productosDisponibles);
-
-        return respuesta.status(201).json({
-            mensaje: 'Orden creada correctamente',
-            orden: nuevaOrden
-        });
 
     } catch (error) {
         console.error(error);
