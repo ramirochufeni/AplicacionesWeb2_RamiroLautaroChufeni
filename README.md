@@ -32,7 +32,7 @@ Las rutas utilizadas son:
 
 - GET /servicios: obtiene todos los servicios disponibles.
 
-- GET /turnos: obtiene todos los turnos registrados.
+- GET /turnos: obtiene los turnos del cliente que inició sesión.
 
 - GET /productos: obtiene todos los productos disponibles.
 
@@ -77,6 +77,8 @@ En el frontend se desarrollaron las siguientes funcionalidades:
 - Redirección al inicio de sesión cuando un usuario intenta comprar sin estar autenticado.
 
 - Encabezado con información de la sesión y pie de página con enlaces de navegación.
+
+- Solicitud de turnos para servicios técnicos desde la página web.
 
 La interfaz mantiene la idea original del proyecto como un servicio técnico de computación, mostrando los servicios disponibles y agregando una sección de venta de productos y componentes.
 
@@ -227,8 +229,26 @@ Ejemplo de eliminación de un cliente mediante la ruta DELETE:
 
 Las capturas muestran el funcionamiento de la interfaz, el carrito de compras, la comunicación con el backend y la generación de órdenes de compra. En la cuarta etapa, esas órdenes se almacenan en MongoDB en lugar de archivos JSON.
 
+## Mejoras
+
+Después de finalizar la cuarta etapa, se agregó una nueva funcionalidad para que los usuarios puedan solicitar turnos directamente desde la página de RamaTech.
+
+Antes, los servicios técnicos solamente se mostraban de manera informativa. Ahora, cada servicio tiene un botón Solicitar turno, que permite elegir una fecha, una hora y describir el problema o que necesita el equipo.
+
+Para implementar esta mejora se aprovechó el módulo de turnos que ya existía en el backend y se realizaron los siguientes cambios:
+
+- Se creó un formulario para solicitar turnos.
+
+- Los turnos se guardan en MongoDB y quedan asociados al cliente que inició sesión.
+
+- Si el usuario no inició sesión, se lo dirige al login para que pueda ingresar y volver al formulario.
+
+- Se agregaron validaciones para evitar fechas pasadas y servicios inexistentes.
+
+- Se protegieron las rutas de turnos mediante JWT, para que cada usuario pueda consultar solamente sus propios turnos.
+
 ## Video demostrativo del TP4
 
 En el video se muestra el funcionamiento de RamaTech, el inicio de sesión, las operaciones CRUD de clientes, la base de datos MongoDB y la generación de órdenes con control de stock. También se presenta la estructura del proyecto y las tecnologías utilizadas.
 
-**Enlace al video:** https://drive.google.com/file/d/1O7gyoDRxziPt87-8BkjheriYIzQc5hHA/view?usp=sharing
+**Enlace al video:** https://drive.google.com/file/d/1FQr-o8JaZsasfuvEz_uS6wzLTHrgyUx0/view?usp=sharing

@@ -1,0 +1,303 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="Solicitar turno | RamaTech">
+    <Header />
+
+    <main class="max-w-3xl mx-auto px-4 py-12">
+        <div class="mb-8">
+            <a href="/#servicios" class="text-blue-600 hover:underline">
+                Volver a los servicios
+            </a>
+
+            <h1 class="text-3xl font-bold mt-5">
+                Solicitar turno
+            </h1>
+
+            <p class="text-gray-600 mt-2">
+                Elegí el servicio que necesitás y completá los datos de tu equipo.
+            </p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+            <form id="formulario-turno" class="space-y-6">
+
+                <div>
+                    <label for="servicio" class="block font-medium mb-2">
+                        Servicio técnico
+                    </label>
+
+                    <select
+                        id="servicio"
+                        name="servicio"
+                        required
+                        disabled
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white"
+                    >
+                        <option value="">Cargando servicios...</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label for="fecha" class="block font-medium mb-2">
+                            Fecha
+                        </label>
+
+                        <input
+                            type="date"
+                            id="fecha"
+                            name="fecha"
+                            required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3"
+                        />
+                    </div>
+
+                    <div>
+                        <label for="hora" class="block font-medium mb-2">
+                            Hora
+                        </label>
+
+                        <input
+                            type="time"
+                            id="hora"
+                            name="hora"
+                            required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label for="equipo" class="block font-medium mb-2">
+                        Equipo que necesita atención
+                    </label>
+
+                    <textarea
+                        id="equipo"
+                        name="equipo"
+                        rows="4"
+                        maxlength="300"
+                        required
+                        placeholder="Ejemplo: Notebook Lenovo que no enciende"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 resize-y"
+                    ></textarea>
+                </div>
+
+
+                <p
+                    id="mensaje-turno"
+                    role="status"
+                    aria-live="polite"
+                    class="text-sm"
+                ></p>
+
+                <button
+                    type="submit"
+                    id="boton-turno"
+                    disabled
+                    class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition"
+                >
+                    Solicitar turno
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        interface Servicio {
+            id: number;
+            nombre: string;
+            precio: number;
+        }
+
+        const API = 'http://localhost:3000';
+
+        const formulario = document.querySelector<HTMLFormElement>(
+            '#formulario-turno'
+        );
+
+        const selector = document.querySelector<HTMLSelectElement>(
+            '#servicio'
+        );
+
+        const fechaInput = document.querySelector<HTMLInputElement>(
+            '#fecha'
+        );
+
+        const mensaje = document.querySelector<HTMLParagraphElement>(
+            '#mensaje-turno'
+        );
+
+        const boton = document.querySelector<HTMLButtonElement>(
+            '#boton-turno'
+        );
+
+        const parametros = new URLSearchParams(window.location.search);
+        const servicioSolicitado = Number(parametros.get('servicio'));
+
+        // Evitar seleccionar fechas anteriores a hoy
+        const hoy = new Date();
+
+        const fechaMinima = [
+            hoy.getFullYear(),
+            String(hoy.getMonth() + 1).padStart(2, '0'),
+            String(hoy.getDate()).padStart(2, '0')
+        ].join('-');
+
+        if (fechaInput) {
+            fechaInput.min = fechaMinima;
+        }
+
+        function mostrarMensaje(texto: string, error = false) {
+            if (!mensaje) return;
+
+            mensaje.textContent = texto;
+            mensaje.className = error
+                ? 'text-sm text-red-600'
+                : 'text-sm text-green-600';
+        }
+
+        async function cargarServicios() {
+            if (!selector || !boton) return;
+
+            try {
+                const respuesta = await fetch(`${API}/servicios`);
+
+                if (!respuesta.ok) {
+                    throw new Error('No se pudieron obtener los servicios');
+                }
+
+                const servicios = await respuesta.json() as Servicio[];
+
+                selector.replaceChildren();
+
+                const serviciosValidos = servicios.filter(
+                    servicio => Number.isSafeInteger(servicio.id) &&
+                        servicio.id > 0
+                );
+
+                for (const servicio of serviciosValidos) {
+                    const opcion = document.createElement('option');
+
+                    opcion.value = String(servicio.id);
+                    opcion.textContent =
+                        `${servicio.nombre} - $${servicio.precio.toLocaleString('es-AR')}`;
+
+                    selector.appendChild(opcion);
+                }
+
+                if (serviciosValidos.length === 0) {
+                    mostrarMensaje('No hay servicios disponibles.', true);
+                    return;
+                }
+
+                if (serviciosValidos.some(
+                    servicio => servicio.id === servicioSolicitado
+                )) {
+                    selector.value = String(servicioSolicitado);
+                }
+
+                selector.disabled = false;
+                boton.disabled = false;
+
+            } catch (error) {
+                console.error(error);
+                mostrarMensaje(
+                    'No se pudieron cargar los servicios. Intentá nuevamente.',
+                    true
+                );
+            }
+        }
+
+        formulario?.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+
+            if (!selector || !boton || !fechaInput) return;
+
+            const datos = new FormData(formulario);
+            const idServicio = Number(datos.get('servicio'));
+            const fecha = String(datos.get('fecha') ?? '');
+            const hora = String(datos.get('hora') ?? '');
+            const equipo = String(datos.get('equipo') ?? '').trim();
+
+            const fechaHora = new Date(`${fecha}T${hora}:00`);
+
+            if (
+                !Number.isSafeInteger(idServicio) ||
+                idServicio <= 0 ||
+                !equipo ||
+                Number.isNaN(fechaHora.getTime()) ||
+                fechaHora <= new Date()
+            ) {
+                mostrarMensaje(
+                    'Revisá el servicio, el equipo y la fecha y hora seleccionadas.',
+                    true
+                );
+                return;
+            }
+
+            boton.disabled = true;
+            boton.textContent = 'Registrando solicitud...';
+            mostrarMensaje('');
+
+            try {
+                const respuesta = await fetch(`${API}/turnos`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fecha,
+                        hora,
+                        equipo,
+                        servicios: [idServicio]
+                    })
+                });
+
+                if (respuesta.status === 401) {
+                    const regreso =
+                        window.location.pathname + window.location.search;
+
+                    window.location.href =
+                        `/login?volver=${encodeURIComponent(regreso)}`;
+
+                    return;
+                }
+
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    mostrarMensaje(
+                        resultado.mensaje || 'No se pudo solicitar el turno.',
+                        true
+                    );
+                    return;
+                }
+
+                mostrarMensaje(
+                    `Solicitud registrada correctamente. Número de turno: ${resultado.turno.id}.`
+                );
+
+                formulario.reset();
+                selector.value = String(idServicio);
+
+            } catch (error) {
+                console.error(error);
+                mostrarMensaje(
+                    'No se pudo conectar con el servidor.',
+                    true
+                );
+
+            } finally {
+                boton.disabled = false;
+                boton.textContent = 'Solicitar turno';
+            }
+        });
+
+        cargarServicios();
+    </script>
+</Layout>

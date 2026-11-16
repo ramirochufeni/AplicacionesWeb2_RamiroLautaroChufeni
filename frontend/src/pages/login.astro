@@ -117,7 +117,20 @@ import Header from '../components/Header.astro';
             mensaje.textContent = 'Sesión iniciada correctamente';
             mensaje.className = 'text-sm text-center text-green-600';
 
-            window.location.href = '/productos';
+            
+        const parametros = new URLSearchParams(window.location.search);
+        const volver = parametros.get('volver');
+
+        // Volver a la solicitud de turno si el usuario venía desde allí
+        if (
+        volver === '/solicitar-turno' ||
+        volver?.startsWith('/solicitar-turno?')
+        ) {
+       window.location.href = volver;
+       } else {
+        window.location.href = '/productos';
+       }
+
 
         } catch (error) {
             mensaje.textContent = 'No se pudo conectar con el servidor';

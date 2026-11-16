@@ -1,11 +1,11 @@
 import { obtenerBaseDatos } from '../../configuraciones/conexion.mongodb.mjs';
 
 // Obtener todos los turnos
-async function obtenerTurnos() {
+async function obtenerTurnos(idCliente) {
     const db = obtenerBaseDatos();
 
     return await db.collection('turnos')
-        .find({})
+        .find({ idCliente })
         .project({ _id: 0 })
         .sort({ id: 1 })
         .toArray();

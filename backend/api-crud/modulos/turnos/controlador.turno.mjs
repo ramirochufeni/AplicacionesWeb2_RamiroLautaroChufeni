@@ -2,10 +2,18 @@ import modelo from './modelo.turno.mjs';
 import modeloClientes from '../clientes/modelo.cliente.mjs';
 import modeloServicios from '../servicios/modelo.servicio.mjs';
 
-// GET - Obtener todos los turnos
+// GET - Obtener los turnos del cliente autenticado
 async function obtenerTurnos(peticion, respuesta) {
     try {
-        const turnos = await modelo.obtenerTurnos();
+        const idCliente = peticion.usuario?.idCliente;
+
+        if (!Number.isSafeInteger(idCliente) || idCliente <= 0) {
+            return respuesta.status(403).json({
+                mensaje: 'No tenés un cliente asociado'
+            });
+        }
+
+        const turnos = await modelo.obtenerTurnos(idCliente);
 
         return respuesta.status(200).json(turnos);
 
@@ -21,12 +29,14 @@ async function obtenerTurnos(peticion, respuesta) {
 // POST - Crear un nuevo turno
 async function agregarTurno(peticion, respuesta) {
     const {
-        idCliente,
-        fecha,
-        hora,
-        equipo,
-        servicios
-    } = peticion.body ?? {};
+    fecha,
+    hora,
+    equipo,
+    servicios
+} = peticion.body ?? {};
+
+
+const idCliente = peticion.usuario?.idCliente;
 
     // Validar datos obligatorios
     if (
@@ -42,6 +52,28 @@ async function agregarTurno(peticion, respuesta) {
             mensaje: 'Faltan datos obligatorios o son inválidos'
         });
     }
+
+
+    // Comprobar el formato de fecha y hora
+    const formatoFecha = /^\d{4}-\d{2}-\d{2}$/.test(fecha);
+    const formatoHora = /^([01]\d|2[0-3]):[0-5]\d$/.test(hora);
+
+    const fechaHora = formatoFecha && formatoHora
+        ? new Date(`${fecha}T${hora}:00`)
+        : null;
+
+    const fechaValida = fechaHora !== null &&
+        !Number.isNaN(fechaHora.getTime()) &&
+        fechaHora.getFullYear() === Number(fecha.slice(0, 4)) &&
+        fechaHora.getMonth() + 1 === Number(fecha.slice(5, 7)) &&
+        fechaHora.getDate() === Number(fecha.slice(8, 10));
+
+    if (!fechaValida || fechaHora <= new Date()) {
+        return respuesta.status(400).json({
+            mensaje: 'Seleccioná una fecha y hora futuras y válidas'
+        });
+    }
+
 
     // Validar los IDs de los servicios
     const idsValidos = servicios.every(
